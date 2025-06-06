@@ -33,14 +33,18 @@ PCG(Procedural Content Generation)는 일련의 규칙에 따라 콘텐츠를 �
   <tr>
     <th>키보드</th>
     <td>Q, W, E, R (스킬)</td>
-    <td>Z, X (무기 전환)</td>
+    <td>Z, X (무기 교체)</td>
+    <td>Tab (월드맵)</td>
     <td>Space Bar (대쉬)</td>
-    <td>Tab (미니맵)</td>
+    <td>T (스킬 강화창)</td>
   </tr>
   <tr>
     <th>마우스</th>
     <td>좌 클릭 (기본 공격)</td>
     <td>우 클릭 (이동)</td>
+    <td>마우스 휠 (줌 인 / 아웃)</td>
+    <td></td>
+    <td></td>
   </tr>
 </table>
 
@@ -139,4 +143,5 @@ AI Perception을 통해 Sight/Damage 기반 감지를 수행하고, 각 몬스�
 
 ## 관련 링크
 
-- 플레이 영상: https://drive.google.com/file/d/1zY7l_9YJuAV5TMM1DHRHP9y_MlMIn4IE/view?usp=drive_link  
+- 플레이 영상: https://drive.google.com/file/d/1zY7l_9YJuAV5TMM1DHRHP9y_MlMIn4IE/view?usp=drive_link
+- 자세한 구현 사항: https://darkened-beryl-7c6.notion.site/No-Face-1328687479db8006870fd8a5b8a8eb3b
