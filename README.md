@@ -52,6 +52,188 @@ PCG(Procedural Content Generation)는 일련의 규칙에 따라 콘텐츠를 �
 
 ## 주요 시스템
 
+# 캐릭터 시스템 구현 요약 (UE5/C++)
+
+## 입력 시스템 (Enhanced Input)
+
+- **바인딩 위치:** `SetupPlayerInputComponent`
+- **입력 종류:** 좌/우클릭(이동·공격), Q/W/E/R(스킬), 무기 전환(Next/Prev), 대시, 줌, 캐스팅 취소, 스킬 UI/월드맵 토글
+- **리소스 로딩:** 
+- 생성자에서 `ConstructorHelpers::FObjectFinder`로 `IMC_Default` 및 각 `InputAction(IA_*)` 로드
+- **런타임 등록:** 
+- `BeginPlay`에서 `UEnhancedInputLocalPlayerSubsystem::AddMappingContext`
+- **핵심:** 
+- IA 로딩 ↔ 런타임 바인딩 분리로 에셋/코드 변경 내구성 확보
+
+---
+
+## 이동/조준 (쿼터뷰 최적화)
+
+### 우클릭 이동 플로우
+
+1. **OnClickStart()** 
+- 즉시 `StopMovement()`로 현재 이동 중단
+2. **OnClicking()** 
+- `GetHitResultUnderCursor` → `CachedLocation` 갱신 
+- `(CachedLocation - ActorLoc).GetSafeNormal()`을 `AddMovementInput`으로 프레임 단위 가속
+3. **OnRelease()** 
+- `SimpleMoveToLocation(GetController(), CachedLocation)`로 네비 경로 이동
+
+### 시선 회전
+
+- **RotateToTarget()** 
+- 타이머 시작(0.01s)
+- **UpdateRotate()** 
+- 커서 히트 지점 기준 Yaw만 `FMath::RInterpTo(속도 50)`로 보간 
+- 각도 오차 < 1°면 타이머 종료
+
+**핵심:** 
+- 드래그 중 물리적 가속, 해제 후 네비 이동의 이중 모드 
+- Pitch 억제로 쿼터뷰 가독성 유지
+
+---
+
+## 기본 전투 & 캐스팅 확정
+
+- **기본 공격:** 
+- `OnAttackStart()` → `AttackComponent->BeginAttack()`
+- **가드 조건:** 
+- `AStoryBook` 상호작용 중이면 리턴(`CanReadBook()`)
+- `TraceAttack()==false` 또는 `SkillState==Progress`면 리턴
+- **캐스팅 확정 우선:** 
+- 캐스팅 중(`SkillComponent->GetCastingFlag()`): 
+- `SkillQueue.Dequeue()`로 대기 중 커맨드 실행 후 리턴
+
+
+
+cpp
+// OnAttackStart() 중 핵심
+if (SkillComponent->GetCastingFlag()) {
+    TFunction SkillAction;
+    if (SkillComponent->SkillQueue.Dequeue(SkillAction))
+    {
+        RotateToTarget();
+        SkillAction();  // 확정 실행
+        return;
+    }
+}
+
+
+
+
+**핵심:** 
+- 공격 입력과 캐스팅 확정이 겹쳐도 큐 우선 규칙으로 레이스 없이 일관 처리
+
+---
+
+## 스킬 시스템 (Q/W/E/R + 캐스팅 취소)
+
+- **Q_Skill / W_Skill / E_Skill / R_Skill** 
+- 공통: `RotateToTarget()` → `OnClickStart()`(즉시 정지) → `SkillComponent->PlaySkill_*()`
+- **취소:** `CancelCasting()`
+- `SetCastingFlag(false)`, `SkillQueue.Pop()`
+- `AnimInstance->StopAllMontages(0.1f)`
+- 이동 모드 `MOVE_Walking` 복귀
+- `SkillComponent->SetCanChangeWeapon(true)`
+
+**핵심:** 
+- 플래그/큐/애님 3요소 동시 리셋 → 인터럽트에도 깨끗한 복구
+
+---
+
+## 무기 전환 & 장착 (검/활/지팡이)
+
+- **전환 입력:** `NextWeapon()` / `PrevWeapon()`
+- `AttackComponent->CanChangeWeapon()` && `SkillComponent->CanChangeWeapon()` 가드
+- 인덱스 0~2 래핑 → `ChangeWeapon()`
+- **ChangeWeapon():**
+- `SkillComponent`/`AttackComponent`에 무기 타입 동기화
+- 델리게이트 배열로 무기별 장착 함수 호출
+- `AnimWeaponIndex()`로 애님 인스턴스 동기화
+- `SignedChangeWeapon.Broadcast(WeaponIndex)`
+
+
+
+cpp
+void ACharacterBase::ChangeWeapon() {
+    SkillComponent->SetWeaponType(WeaponIndex);
+    AttackComponent->SetWeaponType(WeaponIndex);
+    TakeItemDelegateArray[WeaponIndex].TakeItemDelegate.ExecuteIfBound();
+    CurrentWeaponType = static_cast(WeaponIndex);
+    SignedChangeWeapon.Broadcast(WeaponIndex);
+}
+
+
+
+
+- **장착 구현:** `EquipSword` / `EquipBow` / `EquipStaff`
+- 기존 무기 `Destroy()` → 새 무기 `SpawnActor` → 소켓 `AttachToComponent`
+- 무기별 `MaxWalkSpeed`/전환 사운드 적용
+- 활: `IBowInterface`로 `AttackComponent`에 활 인스턴스 주입
+
+**핵심:** 
+- “전환 가능 가드 → 타입 동기화 → 델리게이트 장착 → 애님/브로드캐스트” 표준 체인으로 결합도↓ 확장성↑
+
+---
+
+## 피해/상태 (패링 & 실드)
+
+- **패링:** 
+- `bIsParrying` 시 피해 0, `SkillComponent->ParryingSuccess(DamageCauser)` 호출
+- **Common:** 
+- `UCharacterStatComponent::ApplyDamage(Damage)`
+- **Shield:**
+- `SetShieldAmount(Damage)` 누적 → 임계(`GetShieldThreshould()`) 비교
+- 임계 이하: (현재 로직상) 피해 반환만
+- 임계 초과: 초과분만 `Stat->ApplyDamage(...)`로 HP 적용 → 실드 리셋 → 상태 Common 복귀
+
+**핵심:** 
+- 실드가 누적 흡수하고 임계 초과분만 HP에 관통되도록 상태 기반 제어
+
+---
+
+## UI · 카메라
+
+- **스킬 UI:** 
+- `DisplaySkillUI()` — 있으면 제거, 없으면 `CreateWidget` → `AddToViewport()`
+- **월드맵:** 
+- `DisplayWorldmap()` — 없으면 생성 후 `HitTestInvisible`로 추가, 있으면 Hidden 후 제거
+- **줌:** 
+- `ZoomInOut()` — `SpringArm->TargetArmLength`를 200~2500으로 클램프
+
+---
+
+## 핵심 코드 포인트 (레퍼런스)
+
+- **입력 바인딩:** `SetupPlayerInputComponent`
+- **이동/조준:** `OnClickStart` / `OnClicking` / `OnRelease`, `RotateToTarget` / `UpdateRotate`
+- **공격 시작/확정:** `OnAttackStart` (캐스팅 플래그 + `SkillQueue.Dequeue`)
+- **스킬 실행/취소:** `Q/W/E/R_Skill`, `CancelCasting`
+- **무기 전환/장착:** `Next/PrevWeapon` → `ChangeWeapon` → `EquipSword/Bow/Staff`, `AnimWeaponIndex`
+- **피해 처리:** `TakeDamage`
+- **UI:** `DisplaySkillUI`, `DisplayWorldmap`
+
+---
+
+## 핵심 구현 아이디어 (요약)
+
+- **입력·상태·실행 분리:** 
+- 캐스팅을 **플래그 + 큐(커맨드)**로 분리해 입력 경쟁 상황에도 안정적
+- **무기 전환 파이프라인 표준화:** 
+- 가드 → 타입 동기화 → 델리게이트 장착 → 애님/브로드캐스트로 유지보수성↑
+- **쿼터뷰 UX 최적화:** 
+- 드래그 가속 + 네비 이동, Yaw 보간만 적용
+- **상태 기반 피해 처리:** 
+- 패링/실드/일반 분리로 예외 케이스(인터럽트/상태 전환) 흡수
+
+---
+
+**참고:** 
+- 각 항목별 상세 구현은 C++ 코드 및 UE5 Blueprint와 연동 필요 
+- 확장/변경 시 각 시스템의 분리와 표준화된 파이프라인 유지 권장
+
+---
+
 ### 스킬 시스템
 
 스킬은 즉발형과 캐스팅형으로 나뉩니다.  
