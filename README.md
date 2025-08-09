@@ -77,7 +77,7 @@ PCG(Procedural Content Generation)는 일련의 규칙에 따라 콘텐츠를 �
 
 <br>
 
-## 1) 핵심 개념 & 자료형
+## 1) 추가 자료형
 
 ### 열거형
 
