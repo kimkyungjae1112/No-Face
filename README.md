@@ -2,7 +2,7 @@
 
 ---
 
-[⏩ 플레이 영상 바로가기](https://drive.google.com/file/d/1zY7l_9YJuAV5TMM1DHRHP9y_MlMIn4IE/view?usp=drive_link)  [⏩ 깃허브 바로가기](https://github.com/kimkyungjae1112/No-Face)
+[⏩ 플레이 영상 바로가기](https://drive.google.com/file/d/1zY7l_9YJuAV5TMM1DHRHP9y_MlMIn4IE/view?usp=drive_link)
 
 절차적 콘텐츠 생성 알고리즘 (Procedural Content Generation, 이하 PCG) 알고리즘을 사용하여 자동 맵 생성이 되는 로그라이크 RPG 입니다. 던전을 탐색하며 몬스터를 처치한 뒤 마지막 보스 몬스터를 처치하면 게임이 끝나게 됩니다. 게임이 끝난 후 다시 실행하면 이전의 맵과 다른 새로운 맵이 생성되며, 플레이어는 새로운 환경에서 게임을 진행할 수 있게 됩니다.
 
@@ -40,7 +40,9 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
 
 ### 본인파트
 
-게임 메인 시스템 개발 및 설계
+팀장
+모든 게임 요소에 대한 프로그래밍 담당
+메인 시스템 개발 및 설계
 
 - 전투 시스템
     - 기본 공격
