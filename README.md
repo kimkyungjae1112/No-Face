@@ -1,3 +1,26 @@
+## 게임 개요
+`기간`: 2024.09.06 - 2024.12.04
+
+`인원` : 4명
+
+`본인 역할` : 팀장, 메인 구조 설계 및 개발, 프로젝트 관리
+
+`개발 도구`:  C++, Github, Unreal Engine 5.4
+
+`디자인 패턴` : 이벤트 큐 패턴, 상태 패턴, 싱글톤 패턴
+
+<br>
+
+### 주요 기능
+- PCG 알고리즘을 활용한 맵 자동, 랜덤 생성
+- 포인트 앤 클릭으로 이동 및 키보드를 사용한 스킬 사용
+- 3가지의 무기와 무기마다의 기본 공격 구현
+- 무기마다 4가지의 스킬 구현, 스킬의 종류는 즉발형과 캐스팅 스킬
+- 6 종류의 몬스터 구현
+- 레벨 시스템으로 성장 요소 추가
+
+<br>
+
 ## 게임 소개
 
 [⏩ 플레이 영상 바로가기](https://drive.google.com/file/d/1zY7l_9YJuAV5TMM1DHRHP9y_MlMIn4IE/view?usp=drive_link)
@@ -7,6 +30,8 @@
 PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠를 자동으로 생성하는 알고리즘입니다. 주로 게임 개발에서 사용되며, 게임의 다양성과 재미를 증가시키고, 특히 레벨 디자이너의 작업 부담을 줄이는 역할을 합니다. 최근에는 단순히 게임 맵의 지형지물을 자동, 랜덤하게 생성하는 것 외에도 적 생성, 스토리 생성, 음악 생성 등 다양한 분야로 확장되고 있으며 게임 개발의 주요 기술로 자리 잡고 있습니다.
 
 해당 게임은 PC 윈도우 플랫폼에서 실행되며, 쿼터뷰로 마우스를 이용해 이동, 키보드를 이용해 스킬 및 기타 상호작용을 실행합니다. 
+
+<br>
 
 ### 기본 조작
 
@@ -30,15 +55,24 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
     | 우 클릭 | 이동 |
     | 마우스 휠 | 줌 인 / 아웃 |
 
-플레이어는 3개의 무기(검, 활, 지팡이)를 가지고 있으며 전투 중 자유롭게 변경하여 상황을 헤쳐나갈 수 있습니다. 또한 레벨업을 통해 각 무기의 스킬을 강화할 수 있습니다.
+<br>
+
+플레이어는 3개의 무기(검, 활, 지팡이)를 가지고 있으며 전투 중 자유롭게 변경하여 상황을 헤쳐나갈 수 있습니다. <br>
+또한 레벨업을 통해 각 무기의 스킬을 강화할 수 있습니다.
+
+<br>
 
 ## 개발 내용
 
 ### 본인파트
 
-팀장
-모든 게임 요소에 대한 프로그래밍 담당
-메인 시스템 개발 및 설계
+팀장으로 스케줄 관리 및 업무 분담 <br>
+메인 프로그래머로 PCG 알고리즘을 제외한 모든 게임 요소에 대한 프로그래밍 담당 <br>
+메인 시스템 개발 및 설계 <br>
+
+<br>
+
+### 개발 소개 내용 개요
 
 - 전투 시스템
     - 기본 공격
@@ -61,34 +95,30 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
     - 몬스터 애니메이션 블루프린트
     - 애니메이션 리타게팅
 
-- **해당 화살표를 누르면 자세한 설명을 보실 수 있습니다.**
-    
-    **코드 및 설정에 대한 설명입니다.**
-    
+<br>
+
+<details>
+<summary><strong>해당 화살표를 누르면 자세한 설명을 보실 수 있습니다.</strong></summary>
+
+**코드 및 설정에 대한 설명입니다.**
+
+</details>
+
+<br>
 
 ### 플레이어 전투 시스템
 
 - 기본공격
     - CharacterDefaultAttackComponent                                                           [⏩ 관련 소스코드 바로가기](https://github.com/kimkyungjae1112/No-Face/blob/main/Source/CapstoneProject/Character/CharacterDefaultAttackComponent.h)
-        - 검 기본공격
-            - 4 콤보까지 공격이 존재 → 애님 몽타주를 활용해 구현
-            - Notify를 활용해 공격 판정
-            - Notify 클래스와 Component를 Interface로 연결하여 컴파일 의존성을 줄임
-            - 부채꼴 공격 판정
-        - 활 기본공격
-            - 콤보 공격이 없는 단일 공격
-            - Notify를 활용해 활 애니메이션 실행
-            - Notify를 활용해 화살 생성
-            - Notify 클래스와 Component를 Interface로 연결하여 컴파일 의존성 줄임
-            - 화살은 단일 공격으로 한번 몬스터와 부딪히면 없어짐
-        - 스태프 기본공격
-            - 3 콤보까지 공격이 존재 → 애님 몽타주를 활용해 구현
-            - Notify를 활용해 공격 판정
-            - Notify 클래스와 Component를 Interface로 연결하여 컴파일 의존성 줄임
-            - 다중 공격으로 몬스터들을 뚫고 뒤의 몬스터까지 피격
-        - **기본 공격 코드 흐름**
+        - 기본 공격은 Notify를 이용해 애님 몽타주가 실행될 때 구현됨
+        - 활과 스태프의 경우 Projectile Actor를 소환해 충돌 시 공격 판정을 함
+        - 검의 경우 부채꼴 모양으로 Trace를 잘라 공격 판정을 진행 함
+        - Notify 클래스는 기본 공격 컴포넌트에 Interface 로 접근하여 인터페이스 분리 원칙, 의존 역전 원칙을 지키고자 함
+
+          <details>
+          <summary><strong>기본 공격 코드 흐름</strong></summary>         
             
-            ```cpp
+          ```cpp
             void ACharacterBase::OnAttackStart()
             {
             	if (Cast<AStoryBook>(UGameplayStatics::GetActorOfClass(GetWorld(), AStoryBook::StaticClass()))->CanReadBook()) return;
@@ -114,12 +144,14 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
             	RotateToTarget();
             	AttackComponent->BeginAttack();
             }
-            ```
+          ```
             
-            1. 캐릭터 클래스에 `OnAttackStart()`  함수가 마우스 좌클릭을 클릭 시 호출되도록 바인딩 되어있습니다.
-            2. `OnClickStart()` 함수는 캐릭터의 움직임을 멈추고 `RotateToTarget()` 함수는 공격 방향으로 캐릭터를 회전시킵니다.
-            
-            ```cpp
+          1\. 캐릭터 클래스에 `OnAttackStart()`  함수가 마우스 좌클릭을 클릭 시 호출되도록 바인딩 되어있습니다.
+          2\. `OnClickStart()` 함수는 캐릭터의 움직임을 멈추고 `RotateToTarget()` 함수는 공격 방향으로 캐릭터를 회전시킵니다.
+
+          <br>
+        
+          ```cpp
             void UCharacterDefaultAttackComponent::BeginAttack()
             {
             	if (CurrentCombo == 0)
@@ -164,10 +196,16 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
             	}
             	
             }
-            ```
+          ```
             
-            1. `AttackComponent` 는 `UCharacterDefaultAttackComponent`를 가리키는 포인터로 캐릭터의 현재 무기 상태에 해당하는 공격을 실행합니다.
-            
+          `AttackComponent` 는 `UCharacterDefaultAttackComponent`를 가리키는 포인터로 캐릭터의 현재 무기 상태에 해당하는 공격을 실행합니다.
+     
+          <br>
+          
+          </details>
+
+<br>
+
 - 스킬공격
     - SkillComponent                                                                                               [⏩ 관련 소스코드 바로가기](https://github.com/kimkyungjae1112/No-Face/blob/main/Source/CapstoneProject/Skill/SkillComponent.h)
         - 검 Q,W,E,R
@@ -187,22 +225,160 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
             - R - 플레이어 주변에 낙뢰를 떨어트림
         - 대쉬
             - 플레이어가 현재 바라보는 방향으로 빠른 속도로 이동
-    - 스킬 쿨타임바
-        
-        [⏩ 스킬 쿨타임바 실행 (HUD 클래스)](https://github.com/kimkyungjae1112/No-Face/blob/main/Source/CapstoneProject/UI/HUDWidget.h)
-        
-        [⏩ 스킬 쿨타임바 Widget 클래스](https://github.com/kimkyungjae1112/No-Face/blob/main/Source/CapstoneProject/UI/SkillCooldownUserWidget.h)
-        
-        - 총 12개의 스킬 각각 스킬을 시전하면 쿨타임바가 지나감
-        - 무기 스킬마다 쿨타임이 존재
-            - ex) 검 Q 실행 후 활로 무기를 바꿔서 바로 Q를 사용할 수 있음
-        - **스킬 쿨타임바 코드 흐름**
+                
+<br>
             
-            ## 쿨타임바 위젯
+- 무기 교체                                                                                                                    [⏩ 관련 소스코드 바로가기](https://github.com/kimkyungjae1112/No-Face/blob/main/Source/CapstoneProject/Character/CharacterBase.h)
+    - 현재 어떤 무기를 지니고 있는지 enum class를 통해 표현
+    - Z, X 키를 활용해 무기를 전환하며 각각 이전의 무기, 다음의 무기로 변경
+        <details>
+        <summary><strong>무기 교체 코드 흐름</strong></summary>
+ 
+        <br>
+  
+        1\. 델리게이트를 구조체로 감싼 후 `TArray`로 관리합니다.
             
-            ![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7ebf7000-f855-492a-973c-2e002d905ac7/b3a714a9-a3c2-40bd-a3b8-737822bc1229/image.png)
+        ```cpp
+        DECLARE_DELEGATE(FTakeItemDelegate);
+        
+        USTRUCT()
+        struct FTakeItemDelegateWrapper
+        {
+        	GENERATED_BODY()
+        
+        	FTakeItemDelegateWrapper() {}
+        	FTakeItemDelegateWrapper(const FTakeItemDelegate& InTakeItemDelegate) 
+        	: TakeItemDelegate(InTakeItemDelegate) {}
+        
+        	FTakeItemDelegate TakeItemDelegate;
+        };
+        
+        ```
+
+        <br>
+        
+        ```cpp
+        void ACharacterBase::NextWeapon()
+        {
+        	if (!AttackComponent->CanChangeWeapon() 
+        	|| !SkillComponent->CanChangeWeapon())
+        	{
+        		return;
+        	}
+        
+        	WeaponIndex += 1;
+        	if (WeaponIndex > 2)
+        	{
+        		WeaponIndex = 0;
+        	}
+        
+        	ChangeWeapon();
+        	AnimWeaponIndex();
+        }
+        
+        void ACharacterBase::PrevWeapon()
+        {
+        	if (!AttackComponent->CanChangeWeapon() 
+        	|| !SkillComponent->CanChangeWeapon())
+        	{
+        		return;
+        	}
+        
+        	WeaponIndex -= 1;
+        	if (WeaponIndex < 0)
+        	{
+        		WeaponIndex = 2;
+        	}
+        
+        	ChangeWeapon();
+        	AnimWeaponIndex();
+        }
+        ```
+        
+        2\. `NextWeapon()` 함수는 `Z` 키에 바인딩되어 있으며, 무기를 다음 무기로 전환합니다`PrevWeapon()` 함수는 `X` 키에 바인딩되어 있으며, 무기를 이전 무기로 전환합니다.
             
-            - `WBP_PlayerSkillCooldown` 은 SkillCooldownUserWidget 이란 클래스를 상속받으며 C++로 기능이 구현되어 있습니다.
+        현재 기본 공격, 스킬 공격이 진행 중인지 검사 후 무기 전환 실행합니다.
+        
+        두 함수 모두 `WeaponIndex`를 조작하여 현재 선택된 무기의 인덱스를 변경합니다.
+        
+        인덱스는 0에서 2까지의 값을 가지며, 0은 검, 1은 활, 2는 지팡이를 나타냅니다.
+        
+        인덱스가 범위를 벗어나면 순환되도록 구현되어 있습니다.
+ 
+        <br>
+        
+        ```cpp
+        void ACharacterBase::ChangeWeapon()
+        {
+        	SkillComponent->SetWeaponType(WeaponIndex);
+        	AttackComponent->SetWeaponType(WeaponIndex);
+        	TakeItemDelegateArray[WeaponIndex].TakeItemDelegate.ExecuteIfBound();
+        	CurrentWeaponType = static_cast<EWeaponType>(WeaponIndex);
+        	SignedChangeWeapon.Broadcast(WeaponIndex);
+        }
+        ```
+        
+        3\. `ChangeWeapon()` 함수는 실질적으로 무기를 전환하는 함수입니다.
+            
+        `SkillComponent`와 `AttackComponent`에 새로운 무기 타입(인덱스)을 설정입니다.
+            
+        `TakeItemDelegateArray` 배열에 저장된 델리게이트를 호출하여 해당 무기를 장착합니다
+            
+        `CurrentWeaponType` 변수에 현재 무기의 타입을 저장하고, `SignedChangeWeapon` 이벤트를 통해 UI 또는 애니메이션과 연동됩니다.
+ 
+        <br>
+        
+        ```cpp
+        void ACharacterBase::EquipSword()
+        {
+        	if (WeaponBase)
+        	{
+        		WeaponBase->Destroy();
+        	}
+        
+        	UGameplayStatics::PlaySoundAtLocation(GetWorld(), ToSwordChangeSound, GetActorLocation());
+        	FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("hand_rSocket"));
+        	FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("hand_rSocket"));
+        	GetCharacterMovement()->MaxWalkSpeed = 785.f;
+        
+        	WeaponBase = GetWorld()->SpawnActor<ASword>(SwordClass, SpawnLocation, SpawnRotation);
+        	WeaponBase->AttachToComponent(GetMesh(), 
+        	FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("hand_rSocket"));
+        }
+        ```
+        
+        4\. 검, 활, 스태프의 상위 클래스를 만들어 다형성을 이용해 무기를 관리합니다.
+      
+        이전의 무기를 `Destroy()` 를 통해 삭제 후 현재 무기 상태에 맞는 무기를 스폰됩니다.
+ 
+        <br>
+        
+        </details>
+        
+### 스텟
+    - CharacterStatComponent
+        - 체력바
+        - 경험치
+        - 레벨
+
+<br>
+
+### UI
+스킬 쿨타임바
+        
+[⏩ 스킬 쿨타임바 실행 (HUD 클래스)](https://github.com/kimkyungjae1112/No-Face/blob/main/Source/CapstoneProject/UI/HUDWidget.h)
+[⏩ 스킬 쿨타임바 Widget 클래스](https://github.com/kimkyungjae1112/No-Face/blob/main/Source/CapstoneProject/UI/SkillCooldownUserWidget.h)
+        
+총 12개의 스킬 각각 스킬을 시전하면 쿨타임바가 지나감
+무기 스킬마다 쿨타임이 존재
+ex) 검 Q 실행 후 활로 무기를 바꿔서 바로 Q를 사용할 수 있음
+
+<details>
+            <summary><strong>스킬 쿨타임바 코드 흐름</strong></summary>
+     
+            ### 쿨타임바 위젯
+            
+            USkillCooldownUserWidget 이란 클래스를 생성했으며 UI의 모든 기능은 C++로 구현되어 있습니다.
             
             ```cpp
             void USkillCooldownUserWidget::NativeConstruct()
@@ -246,11 +422,15 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
             }
             
             ```
+ 
+            <br>
+
+            ### HUD 위젯
             
-            ## HUD 위젯
-            
-            ![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7ebf7000-f855-492a-973c-2e002d905ac7/fb26f588-71fc-4389-aee8-5243bee9b6e2/image.png)
-            
+            <img width="1251" height="1315" alt="image (5)" src="https://github.com/user-attachments/assets/7dfefc05-b9c2-4bcb-b2fc-9e231fd7f2fe" />
+
+            <br>
+
             - `Q,W,E,R` / `Q_1, W_1, E_1, R_1` / `Q_2, W_2, E_2, R_2` 끼리 한 세트이며 각각 검, 활, 지팡이 스킬 쿨타임바를 의미합니다.
             - HUD 클래스에서 인스턴스를 받아오고 있습니다.
             
@@ -291,7 +471,9 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
             	UPROPERTY()
             	TObjectPtr<class USkillCooldownUserWidget> Staff_SkillCooldownBar_R;
             ```
-            
+     
+            <br>
+          
             ```cpp
             ACharacterBase* Character = Cast<ACharacterBase>(GetOwningPlayerPawn());
             if (Character)
@@ -300,7 +482,9 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
             	Character->SetupHUDWidget(this);
             }
             ```
-            
+      
+            <br>
+ 
             - HUD 클래스는 플레이어 클래스의 포인터를 받아와 `FOnSignedChangeWeapon`  델리게이트에 `SetSkillUI(int32 WeaponType)` 를 등록합니다.
             - 해당 델리게이트는 캐릭터의 무기가 바뀔 때 브로드캐스트를 보내며 바인딩된 함수는 현재 무기 스킬의 쿨타임바만 보이도록 작동합니다.
             
@@ -314,7 +498,9 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
             											 bool& bCanUseSkill, ESkillType SkillType, 
             											 int32 WeaponType, float& Timer);
             ```
-            
+ 
+            <br>
+
             - 해당 함수들은 현재 무기타입, 사용자가 누른 스킬 타입 (Q,W,E,R) 에 따라 쿨타임바를 움직이도록 작동합니다.
             
             ```cpp
@@ -337,9 +523,9 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
             
             }
             
-            이런식으로 이중 switch 문이다.
+            // 이런식으로 이중 switch 문입니다.
             
-            12개의 쿨타임바마다 아래 로직이 실행된다.
+            // 12개의 쿨타임바마다 아래 로직이 실행됩니다.
             GetWorld()->GetTimerManager().SetTimer(CooldownTimerHandle,
             	[&, SkillType, CooldownDuration]()
             	{
@@ -357,9 +543,11 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
             	}, 0.01f, true);	
             ```
             
-            쿨타임바를 업데이트 해주는 로직은 다음과 같습니다.
-            쿨타임바와 관련된 함수는 SkillComponent 클래스에서 호출됩니다. 
-            SkillComponent에서 넘겨주는 인자를 바탕으로 쿨타임바를 업데이트 합니다.
+            <br>
+
+            - 쿨타임바를 업데이트 해주는 로직은 다음과 같습니다.
+            - 쿨타임바와 관련된 함수는 SkillComponent 클래스에서 호출됩니다. 
+            - SkillComponent에서 넘겨주는 인자를 바탕으로 쿨타임바를 업데이트 합니다.
             
             `void UpdateCooldownBar(float CooldownDuration, FTimerHandle& CooldownTimerHandle, bool& bCanUseSkill, ESkillType SkillType, int32 WeaponType, float& Timer);`
             
@@ -374,7 +562,9 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
             int32 : 현재 무기 상태를 구분하기 위한 인자입니다.
             
             float& : 스킬이 사용된 후 몇 초가 지났는지 저장하는 변수입니다. SkillComponent에 각 스킬마다 정의되어 있으며 해당 변수의 +-에 따라 쿨타임바가 변합니다.
-            
+ 
+            <br>
+
             ## 스킬 컴포넌트
             
             - 스킬 컴포넌트에서는 쿨타임을 지정만 해줍니다.
@@ -393,135 +583,19 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
             														bCanUseSkill, SkillType, WeaponType,Timer);
             }
             ```
+         
+</details>
             
-- 무기 교체                                                                                                                    [⏩ 관련 소스코드 바로가기](https://github.com/kimkyungjae1112/No-Face/blob/main/Source/CapstoneProject/Character/CharacterBase.h)
-    - 현재 어떤 무기를 지니고 있는지 enum class를 통해 표현
-    - Z, X 키를 활용해 무기를 전환하며 각각 이전의 무기, 다음의 무기로 변경
-    - **무기 교체 코드 흐름**
-        
-        ```cpp
-        DECLARE_DELEGATE(FTakeItemDelegate);
-        
-        USTRUCT()
-        struct FTakeItemDelegateWrapper
-        {
-        	GENERATED_BODY()
-        
-        	FTakeItemDelegateWrapper() {}
-        	FTakeItemDelegateWrapper(const FTakeItemDelegate& InTakeItemDelegate) 
-        	: TakeItemDelegate(InTakeItemDelegate) {}
-        
-        	FTakeItemDelegate TakeItemDelegate;
-        };
-        
-        ```
-        
-        1. 델리게이트를 구조체로 감싼 후 `TArray`로 관리합니다.
-        
-        ```cpp
-        void ACharacterBase::NextWeapon()
-        {
-        	if (!AttackComponent->CanChangeWeapon() 
-        	|| !SkillComponent->CanChangeWeapon())
-        	{
-        		return;
-        	}
-        
-        	WeaponIndex += 1;
-        	if (WeaponIndex > 2)
-        	{
-        		WeaponIndex = 0;
-        	}
-        
-        	ChangeWeapon();
-        	AnimWeaponIndex();
-        }
-        
-        void ACharacterBase::PrevWeapon()
-        {
-        	if (!AttackComponent->CanChangeWeapon() 
-        	|| !SkillComponent->CanChangeWeapon())
-        	{
-        		return;
-        	}
-        
-        	WeaponIndex -= 1;
-        	if (WeaponIndex < 0)
-        	{
-        		WeaponIndex = 2;
-        	}
-        
-        	ChangeWeapon();
-        	AnimWeaponIndex();
-        }
-        ```
-        
-        1. `NextWeapon()` 함수는 `Z` 키에 바인딩되어 있으며, 무기를 다음 무기로 전환합니다`PrevWeapon()` 함수는 `X` 키에 바인딩되어 있으며, 무기를 이전 무기로 전환합니다
-            
-            현재 기본 공격, 스킬 공격이 진행 중인지 검사 후 무기 전환 실행합니다.
-            
-        
-               두 함수 모두 `WeaponIndex`를 조작하여 현재 선택된 무기의 인덱스를 변경합니다.
-        
-        인덱스는 0에서 2까지의 값을 가지며, 0은 검, 1은 활, 2는 지팡이를 나타냅니다.
-        
-        인덱스가 범위를 벗어나면 순환되도록 구현되어 있습니다.
-        
-        ```cpp
-        void ACharacterBase::ChangeWeapon()
-        {
-        	SkillComponent->SetWeaponType(WeaponIndex);
-        	AttackComponent->SetWeaponType(WeaponIndex);
-        	TakeItemDelegateArray[WeaponIndex].TakeItemDelegate.ExecuteIfBound();
-        	CurrentWeaponType = static_cast<EWeaponType>(WeaponIndex);
-        	SignedChangeWeapon.Broadcast(WeaponIndex);
-        }
-        ```
-        
-        1. `ChangeWeapon()` 함수는 실질적으로 무기를 전환하는 함수입니다.
-            
-            `SkillComponent`와 `AttackComponent`에 새로운 무기 타입(인덱스)을 설정입니다.
-            
-            `TakeItemDelegateArray` 배열에 저장된 델리게이트를 호출하여 해당 무기를 장착합니다
-            
-            `CurrentWeaponType` 변수에 현재 무기의 타입을 저장하고, `SignedChangeWeapon` 이벤트를 통해 UI 또는 애니메이션과 연동됩니다.
-            
-        
-        ```cpp
-        void ACharacterBase::EquipSword()
-        {
-        	if (WeaponBase)
-        	{
-        		WeaponBase->Destroy();
-        	}
-        
-        	UGameplayStatics::PlaySoundAtLocation(GetWorld(), ToSwordChangeSound, GetActorLocation());
-        	FVector SpawnLocation = GetMesh()->GetSocketLocation(TEXT("hand_rSocket"));
-        	FRotator SpawnRotation = GetMesh()->GetSocketRotation(TEXT("hand_rSocket"));
-        	GetCharacterMovement()->MaxWalkSpeed = 785.f;
-        
-        	WeaponBase = GetWorld()->SpawnActor<ASword>(SwordClass, SpawnLocation, SpawnRotation);
-        	WeaponBase->AttachToComponent(GetMesh(), 
-        	FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("hand_rSocket"));
-        }
-        ```
-        
-        1. 검, 활, 스태프의 상위 클래스를 만들어 다형성을 이용해 무기를 관리합니다.
-            
-            이전의 무기를 `Destroy()` 를 통해 삭제 후 현재 무기 상태에 맞는 무기를 스폰됩니다.
-            
-        
-- 스텟
-    - CharacterStatComponent
-        - 체력바
-        - 경험치
-        - 레벨
+
+<br>
 
 ### AI 몬스터 구현
 
 EnemyBase란 상위 클래스를 만들어 기본적인 기능을 구현한 후, 이를 상속받아 몬스터의 종류별로 기능을 더 자세히 구현하고자 했음
 
-EnemyBase의 역할
+<br>
+
+**EnemyBase 클래스의 역할**
 
 - 공격받았을 때
     - 대미지 UI 띄우기
@@ -537,95 +611,93 @@ EnemyBase의 역할
 - IAIInterface 상속
     - BTDecorator, BTService, BTTask 클래스를 작성할 때 몬스터 클래스를 직접 참조하는 것이 아닌 IAIInterface를 통해 간접 참조
 
-몬스터 6종 제작
+<br>
+
+**몬스터 6종 제작**
 
 모두 EnemyBase 클래스를 상속받아 제작
 
 1. AI Perception
+
+- 각 몬스터의 `AI Controller`에 `AI Perception`을 등록
     
-    각 몬스터의 `AI Controller`에 `AI Perception`을 등록
+- 근접 몬스터는 Sight, Damage 감각을 인식, 원거리 몬스터는 Sight 감각만을 인식
     
-    근접 몬스터는 Sight, Damage 감각을 인식, 원거리 몬스터는 Sight 감각만을 인식
-    
-    몬스터 종류마다 인식 범위가 다르며 플레이어를 인식하면 Blackboard의 데이터를 새로 고침
-    
-    - AI Perception 설정값
-        1. 근접 탱커
-            1. 기본 이동 속도 600
-            2. 2콤보 기본 공격, 공격 사거리 200
-            3. 최초 플레이어 탐지 거리 1500, 플레이어를 놓치는 거리 2000, 시야각 270
-            4. 탐지 감각 시각, 대미지
-            5. 공격을 받을 때마다 SkillEnergy가 10씩 쌓이며 50이 되면 스킬 사용
-        2. 근접 일반
-            1. 기본 이동 속도 600
-            2. 단일 콤보 기본 공격, 공격 사거리 300
-            3. 최초 플레이어 탐지 거리 1500, 플레이어를 놓치는 거리 2000, 시야각 270
-            4. 탐지 감각 시각, 대미지
-        3. 근접 어쌔신
-            1. 기본 이동 속도 600
-            2. 2콤보 기본 공격, 공격 사거리 400
-            3. 최초 플레이어 탐지 거리 1500, 플레이어를 놓치는 거리 2000, 시야각 270
-            4. 탐지 감각 시각, 대미지
-        4. 원거리 일반
-            1. 플레이어와 거리가 400 이하라면 근접 공격
-            2. 플레이어와 거리가 2000 이하라면 원거리 기본 공격
-        5. 원거리 시즈
-            1. 플레이어와 거리가 400 이하라면 근접 공격
-            2. 플레이어와 거리가 2500 이하라면 원거리 기본 공격
-            3. 플레이어와 거리가 2500 이상이라면 시즈 공격
+- 몬스터 종류마다 인식 범위가 다르며 플레이어를 인식하면 Blackboard의 데이터를 새로 고침
+
+<br>
+
 2. Behavior Tree
     - 근접 일반 몬스터
         
         ![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7ebf7000-f855-492a-973c-2e002d905ac7/e4a7eefe-f009-4e66-ad43-28456a68ab64/image.png)
-        
+
+    <br>
+
     - 근접 탱커  몬스터
         
         ![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7ebf7000-f855-492a-973c-2e002d905ac7/7c506d51-ece9-4678-8750-e601b6f6aeb9/image.png)
-        
+
+    <br>
+
     - 근접 어쌔신 몬스터
         
         ![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7ebf7000-f855-492a-973c-2e002d905ac7/5e979204-56bc-420f-9a84-158ad2eb0069/image.png)
-        
+
+    <br>
+
     - 원거리 일반 몬스터
         
         ![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7ebf7000-f855-492a-973c-2e002d905ac7/c7e74f2f-d3d1-45f6-8745-30781c36f31a/image.png)
-        
+
+    <br>
+    
     - 원거리 시즈 몬스터
         
         ![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7ebf7000-f855-492a-973c-2e002d905ac7/b02a03b1-975f-47e4-bcab-6bb50bb995ff/image.png)
-        
+
+    <br>
+
     - 보스 몬스터
         
         ![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7ebf7000-f855-492a-973c-2e002d905ac7/bd16d3ef-3e61-47b0-8117-2d1d5346b61b/image.png)
         
+<br>
 
 ### 맵
 
-- 스테이지 이동                                                                                                            [⏩ 관련 소스코드 바로가기](https://github.com/kimkyungjae1112/No-Face/blob/main/Source/CapstoneProject/WorldGen/RoomActor.h)
+스테이지 이동                                                                                                            [⏩ 관련 소스코드 바로가기](https://github.com/kimkyungjae1112/No-Face/blob/main/Source/CapstoneProject/WorldGen/RoomActor.h)
+
+<br>
+
+```cpp
+UENUM(BlueprintType)
+enum class EStageState : uint8
+{
+    READY = 0,
+    FIGHT,
+    NEXT
+};
+```
+
+<br>
     
-    ```cpp
-    UENUM(BlueprintType)
-    enum class EStageState : uint8
-    {
-        READY = 0,
-        FIGHT,
-        NEXT
-    };
-    ```
-    
-    - 각 스테이지는 3가지의 상태를 가지고 있음
-        - READY - 플레이어 캐릭터가 탐지되면 몬스터 스폰 후 맵의 상태를 **FIGHT**로 전환
-        - FIGHT - 스테이지의 문이 닫히며 몬스터와 전투 시작
-        - NEXT - **FIGHT** 상태에서 스폰된 몬스터가 모두 없어지면 전환되며 다음 스테이지로 가는     문이 열림
-    - 문이 열리는 방향은 비트 플래그 값을 바탕으로 함
+- 각 스테이지는 3가지의 상태를 가지고 있음
+  - READY - 플레이어 캐릭터가 탐지되면 몬스터 스폰 후 맵의 상태를 **FIGHT**로 전환
+  - FIGHT - 스테이지의 문이 닫히며 몬스터와 전투 시작
+  - NEXT - **FIGHT** 상태에서 스폰된 몬스터가 모두 없어지면 전환되며 다음 스테이지로 가는 문이 열림
+- 문이 열리는 방향은 비트 플래그 값을 바탕으로 함
+  <img width="469" height="294" alt="KakaoTalk_20241123_010635716" src="https://github.com/user-attachments/assets/556ad35c-394c-4ce6-9aab-2a26b5d038eb" />
+
         
-        ![KakaoTalk_20241123_010635716.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7ebf7000-f855-492a-973c-2e002d905ac7/92867682-4ccc-44e3-ad83-73df2166efc9/KakaoTalk_20241123_010635716.png)
-        
+<br>
 
 ### 애니메이션
 
 - Blend Pose 노드를 사용해 무기마다 다른 애니메이션 실행
 - 현재 무기 타입을 enum class로 받아옴
+
+<br>
 
 # 회고
 
@@ -634,6 +706,8 @@ EnemyBase의 역할
 1. git lfs를 이용해 언리얼 프로젝트를 공유할 때, 블루프린트 애셋은 조심해서 다뤄야 한다는 것을 알게 되었다. 협업을 하며 블루프린트 애셋이 지워진적이 많아서 힘들었다.
 2. 캐스팅 스킬을 구현하기 위해 Queue와 같은 컨테이너에 함수 객체를 넣어 구현할 수 있었던 점, 함수 또한 단지 주소를 가리키고 있는 것이라는 것을 다시 한번 상기했다.
 3. 무기가 많아지고, 플레이어의 공격이 많아 질수록, 상태 패턴의 강력함에 대해 알 수 있었다.
+
+<br>
 
 ### 아쉬운점
 
