@@ -7,7 +7,9 @@
 
 `개발 도구`:  C++, Github, Unreal Engine 5.4
 
-`디자인 패턴` : 이벤트 큐 패턴, 상태 패턴, 싱글톤 패턴
+`디자인 패턴`: 이벤트 큐 패턴, 상태 패턴, 싱글톤 패턴
+
+`플레이 영상`: [플레이 영상 바로가기](https://drive.google.com/file/d/1zY7l_9YJuAV5TMM1DHRHP9y_MlMIn4IE/view?usp=drive_link)
 
 <br>
 
@@ -22,8 +24,6 @@
 <br>
 
 ## 게임 소개
-
-[⏩ 플레이 영상 바로가기](https://drive.google.com/file/d/1zY7l_9YJuAV5TMM1DHRHP9y_MlMIn4IE/view?usp=drive_link)
 
 절차적 콘텐츠 생성 알고리즘 (Procedural Content Generation, 이하 PCG) 알고리즘을 사용하여 자동 맵 생성이 되는 로그라이크 RPG 입니다. 던전을 탐색하며 몬스터를 처치한 뒤 마지막 보스 몬스터를 처치하면 게임이 끝나게 됩니다. 게임이 끝난 후 다시 실행하면 이전의 맵과 다른 새로운 맵이 생성되며, 플레이어는 새로운 환경에서 게임을 진행할 수 있게 됩니다.
 
