@@ -219,7 +219,201 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
             - R - 플레이어 주변에 낙뢰를 떨어트림
         - 대쉬
             - 플레이어가 현재 바라보는 방향으로 빠른 속도로 이동
+        <details>
+        <summary><strong>스킬 코드 흐름</strong></summary>
+        
+        ### 즉발형 스킬
+        1\. 사용자가 Q, W, E, R 중 입력
+        
+        ```
+        void ACharacterBase::W_Skill()
+        {
+        	RotateToTarget();
+        	OnClickStart();
+        
+        	SkillComponent->PlaySkill_W();
+        }
+        ```
+        
+        현재 캐릭터의 Yaw 값을 마우스 포인터가 가리키는 위치로 연산한 뒤, 움직임을 멈추고 SkillComponent에서 스킬 메서드 호출
+        
+        <br>
+        
+        2\. 무기 타입에 따라 분기
+        
+        ```
+        void USkillComponent::PlaySkill_W()
+        {
+        	switch (CurrentWeaponType)
+        	{
+        	case 0:
+        		BeginSword_W();
+        		break;
+        	case 1:
+        		BeginBow_W();
+        		break;
+        	case 2:
+        		BeginStaff_W();
+        		break;
+        	default:
+        		break;
+        	}
+        }
+        ```
+        
+        현재 플레이어가 지니고 있는 무기 타입에 따라 무기에 맞는 스킬을 실행
+        
+        <br>
+        
+        3\. 스킬 시작
+        
+        ```
+        void USkillComponent::BeginSword_W()
+        {
+        	if (!bCanUseSkill_Sword_W || CurrentSkillState == ESkillState::Progress)
+        	{
+        		return;
+        	}
+        	else
+        	{
+        		StartCooldown(CooldownDuration_Sword_W, CooldownTimerHandle_Sword_W, bCanUseSkill_Sword_W, ESkillType::W, CurrentWeaponType, Sword_W_Timer);
+        		CurrentSkillState = ESkillState::Progress;
+        	}
+        
+        	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
+        
+        	bCanChangeWeapon = false;
+        	Character->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+        	AnimInstance->Montage_Play(SkillMontageData->SwordMontages[1], 1.3f);
+        
+        	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Sword_W_BodyEffect, Character->GetActorLocation(), Character->GetActorRotation());
+        
+        	FOnMontageEnded MontageEnd;
+        	MontageEnd.BindUObject(this, &USkillComponent::EndSword_W);
+        	AnimInstance->Montage_SetEndDelegate(MontageEnd, SkillMontageData->SwordMontages[1]);
+        }
+        ```
+        
+        스킬 쿨타임 및 캐릭터 움직임, 파티클 등을 제어하고, 애니메이션이 끝나면 값들을 초기화한다.
+        
+        <br>
+        
+        4\. 스킬 종료
+        
+        ```
+        void USkillComponent::EndSword_W(UAnimMontage* Target, bool IsProperlyEnded)
+        {
+        	CurrentSkillState = ESkillState::CanSkill;
+        	Character->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+        	bCanChangeWeapon = true;
+        }
+        ```
+        
+        ### 캐스팅 스킬
+        
+        1\. 즉발형 스킬의 분기까지는 동일 로직
+        
+        <br>
+        
+        2\. 스킬 시작
+        
+        ```
+        void USkillComponent::BeginBow_W()
+        {
+        	UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
+        	bCanChangeWeapon = false;
+        
+        	if (bCasting)
+        	{
+        		StartCooldown(CooldownDuration_Bow_W, CooldownTimerHandle_Bow_W, bCanUseSkill_Bow_W, ESkillType::W, CurrentWeaponType, Bow_W_Timer);
+        		CurrentSkillState = ESkillState::Progress;
+        		Bow_W_SpawnLocation = Cursor.Location;
+        		bCasting = false;
+        		Character->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+        	
+        		AnimInstance->Montage_Play(SkillMontageData->BowMontages[1], 1.0f);
+        
+        		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Bow_W_WeaponEffect, Character->GetActorLocation(), FRotator::ZeroRotator);
+        
+        		FOnMontageEnded MontageEnd;
+        		MontageEnd.BindUObject(this, &USkillComponent::EndBow_W);
+        		AnimInstance->Montage_SetEndDelegate(MontageEnd, SkillMontageData->BowMontages[1]);
+        	}
+        	else
+        	{
+        		if (!bCanUseSkill_Bow_W || CurrentSkillState == ESkillState::Progress) return;
+        
+        		bCasting = true;
+        
+        		SkillQueue.Enqueue([this]()
+        			{
+        				BeginBow_W();
+        			});
+        	}
+        }
+        ```
+        
+        현재 Casting Flag가 활성화 되어 있는지 확인
+        - 활성화 되어 있지 않은 경우
+            - Cating Flag를 활성화하고 SkilQueue에 함수 자기 자신을 삽입
                 
+                ```
+                void USkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+                {
+                    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+        
+                    if (bCasting)
+                    {
+                        PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, Cursor);
+                        DrawDebugSphere(GetWorld(), Cursor.Location, 20.f, 32, FColor::Red, false);
+                    }
+                }
+                ```
+        
+            - 그 후 활성화된 Casting Flag가 현재 커서 위치를 쫓음
+
+            <br>
+            
+        - 활성화 되어 있는 경우
+            - 플레이어가 마우스 좌클릭을 눌러 공격을 실행하면, 현재 Casting Flag를 확인하고 SkillQueue에 있던 함수를 실행
+        
+                ```
+                void ACharacterBase::OnAttackStart()
+                {
+                    if (Cast<AStoryBook>(UGameplayStatics::GetActorOfClass(GetWorld(), AStoryBook::StaticClass()))->CanReadBook()) return;
+        
+                    if (TraceAttack() == false || SkillComponent->GetSkillState() == ESkillState::Progress)
+                    {
+                        return;
+                    }
+        
+                    /* 스킬 캐스팅 중이면 해당 스킬 싱행 */
+                    if (SkillComponent->GetCastingFlag())
+                    {
+                        TFunction<void()> SkillAction;
+                        if (SkillComponent->SkillQueue.Dequeue(SkillAction))
+                        {
+                            RotateToTarget();
+                            SkillAction();
+                            return;
+                        }
+                    }
+        
+                    OnClickStart();
+                    RotateToTarget();
+                    AttackComponent->BeginAttack();
+                }
+                ```
+        
+            - BeginBow_W() 함수에서 if(bCasting) {} 블록 안으로 들어가 캐스팅 스킬 시작
+        
+        <br>
+        
+        3\. 스킬 종료는 즉발형과 동일 로직
+        
+        <br>
+        
+        </details>
 <br>
             
 - 무기 교체                                                                                                                    [⏩ 관련 소스코드 바로가기](https://github.com/kimkyungjae1112/No-Face/blob/main/Source/CapstoneProject/Character/CharacterBase.h)
