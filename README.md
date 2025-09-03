@@ -374,7 +374,7 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
 ex) 검 Q 실행 후 활로 무기를 바꿔서 바로 Q를 사용할 수 있음
 
 <details>
-            <summary><strong>스킬 쿨타임바 코드 흐름</strong></summary>
+<summary><strong>스킬 쿨타임바 코드 흐름</strong></summary>
      
             ### 쿨타임바 위젯
             
