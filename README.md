@@ -74,31 +74,25 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
 
 ### 개발 소개 내용 개요
 
-- 전투 시스템
+* [전투 시스템](###-플레이어-전투-시스템)
     - 기본 공격
     - 스킬 공격
     - 무기 교체
 - 스텟 시스템
 - UI
     - 스킬 쿨타임바
-    - 미니맵 이동
-    - 플레이어 체력바
 - 몬스터
     - 6종 몬스터 기획 및 개발
     - Behavior Tree
 - 스테이지
-    - 다음 스테이지로 이동
-    - 몬스터 스폰
     - 스테이지 상태
 - 애니메이션
-    - 캐릭터 애니메이션 블루프린트
-    - 몬스터 애니메이션 블루프린트
-    - 애니메이션 리타게팅
+
 
 <br>
 
 <details>
-<summary><strong>해당 화살표를 누르면 자세한 설명을 보실 수 있습니다.</strong></summary>
+<summary><strong>앞으로 나오는 해당 화살표를 누르시면 자세한 설명을 보실 수 있습니다.</strong></summary>
 
 **코드 및 설정에 대한 설명입니다.**
 
@@ -146,7 +140,7 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
             }
           ```
             
-          1\. 캐릭터 클래스에 `OnAttackStart()`  함수가 마우스 좌클릭을 클릭 시 호출되도록 바인딩 되어있습니다.
+          1\. 캐릭터 클래스에 `OnAttackStart()`  함수가 마우스 좌클릭을 클릭 시 호출되도록 바인딩 되어있습니다. <br>
           2\. `OnClickStart()` 함수는 캐릭터의 움직임을 멈추고 `RotateToTarget()` 함수는 공격 방향으로 캐릭터를 회전시킵니다.
 
           <br>
@@ -198,7 +192,7 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
             }
           ```
             
-          `AttackComponent` 는 `UCharacterDefaultAttackComponent`를 가리키는 포인터로 캐릭터의 현재 무기 상태에 해당하는 공격을 실행합니다.
+          3\. `AttackComponent` 는 `UCharacterDefaultAttackComponent`를 가리키는 포인터로 캐릭터의 현재 무기 상태에 해당하는 공격을 실행합니다.
      
           <br>
           
@@ -354,236 +348,245 @@ PCG 알고리즘은 일련의 규칙을 반복적으로 수행하여 콘텐츠�
         <br>
         
         </details>
+
+<br>
         
 ### 스텟
-    - CharacterStatComponent
-        - 체력바
-        - 경험치
-        - 레벨
+CharacterStatComponent 클래스에서 관리
+
+```
+DECLARE_MULTICAST_DELEGATE(FOnHpZero);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnHpChanged, float /* CurrentHp */);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnExpChanged, float /* CurrentExp */);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnLevelChanged, int/* CurrentLevel */);
+```
+
+해당 델리게이트에 HUD Widget에 있는 UI Component의 함수를 연결시켜 스텟이 변경될 때 UI로 표시되도록 구현
 
 <br>
 
 ### UI
 스킬 쿨타임바
         
-[⏩ 스킬 쿨타임바 실행 (HUD 클래스)](https://github.com/kimkyungjae1112/No-Face/blob/main/Source/CapstoneProject/UI/HUDWidget.h)
+[⏩ 스킬 쿨타임바 실행 (HUD 클래스)](https://github.com/kimkyungjae1112/No-Face/blob/main/Source/CapstoneProject/UI/HUDWidget.h) <br>
 [⏩ 스킬 쿨타임바 Widget 클래스](https://github.com/kimkyungjae1112/No-Face/blob/main/Source/CapstoneProject/UI/SkillCooldownUserWidget.h)
         
-총 12개의 스킬 각각 스킬을 시전하면 쿨타임바가 지나감
-무기 스킬마다 쿨타임이 존재
-ex) 검 Q 실행 후 활로 무기를 바꿔서 바로 Q를 사용할 수 있음
+총 12개의 스킬 각각 스킬을 시전하면 쿨타임바 활성화 <br>
+무기 스킬마다 쿨타임이 존재 <br>
+예시로 검 스킬 Q 실행 후 활로 무기를 바꿔서 바로 스킬 Q를 사용할 수 있음
 
 <details>
 <summary><strong>스킬 쿨타임바 코드 흐름</strong></summary>
-     
-            ### 쿨타임바 위젯
-            
-            USkillCooldownUserWidget 이란 클래스를 생성했으며 UI의 모든 기능은 C++로 구현되어 있습니다.
-            
-            ```cpp
-            void USkillCooldownUserWidget::NativeConstruct()
-            {
-            	Super::NativeConstruct();
-            
-            	CooldownBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("SkillCooldownBar")));
-            	ensure(CooldownBar);
-            
-            	//처음 UI 생성시 쿨타임바 초기화
-            	CooldownBar->SetPercent(0.f);
-            }
-            
-            void USkillCooldownUserWidget::UpdateCooldownBar(float CurrentTime)
-            {
-            	//StartCooldown 함수가 명시적으로 호출되어야지 쿨타임바의 업데이트 시작
-            	if (bIsCooldownActive)
-            	{
-            		//외부에서 들어오는 시간을 그대로 적용한다.
-            		CooldownBar->SetPercent(CurrentTime / MaxCooldownTime);
-            
-            		//최대 쿨타임보다 커지면 더 이상 업데이트를 진행하지 않으며 쿨타임바를 초기화한다.
-            		if (CurrentTime >= MaxCooldownTime - KINDA_SMALL_NUMBER)
-            		{
-            			bIsCooldownActive = false;		
-            			CooldownBar->SetPercent(0.f);
-            		}
-            	}
-            }
-            
-            //최대 쿨타임 시간을 정하는 함수
-            void USkillCooldownUserWidget::SetCooldownTime(float InMaxCooldownTime)
-            {
-            	MaxCooldownTime = InMaxCooldownTime;
-            }
-            
-            //쿨타임바의 실행 트리거 함수
-            void USkillCooldownUserWidget::StartCooldown()
-            {
-            	bIsCooldownActive = true;
-            }
-            
-            ```
- 
-            <br>
 
-            ### HUD 위젯
-            
-            <img width="1251" height="1315" alt="image (5)" src="https://github.com/user-attachments/assets/7dfefc05-b9c2-4bcb-b2fc-9e231fd7f2fe" />
+### 쿨타임바 위젯
 
-            <br>
+USkillCooldownUserWidget 클래스로 구현했으며 UI의 모든 기능은 C++로 구현되어 있음음
 
-            - `Q,W,E,R` / `Q_1, W_1, E_1, R_1` / `Q_2, W_2, E_2, R_2` 끼리 한 세트이며 각각 검, 활, 지팡이 스킬 쿨타임바를 의미합니다.
-            - HUD 클래스에서 인스턴스를 받아오고 있습니다.
-            
-            ```cpp
-            	UPROPERTY()
-            	TObjectPtr<class USkillCooldownUserWidget> Sword_SkillCooldownBar_Q;
-            
-            	UPROPERTY()
-            	TObjectPtr<class USkillCooldownUserWidget> Bow_SkillCooldownBar_Q;
-            
-            	UPROPERTY()
-            	TObjectPtr<class USkillCooldownUserWidget> Staff_SkillCooldownBar_Q;
-            
-            	UPROPERTY()
-            	TObjectPtr<class USkillCooldownUserWidget> Sword_SkillCooldownBar_W;
-            
-            	UPROPERTY()
-            	TObjectPtr<class USkillCooldownUserWidget> Bow_SkillCooldownBar_W;
-            
-            	UPROPERTY()
-            	TObjectPtr<class USkillCooldownUserWidget> Staff_SkillCooldownBar_W;
-            	
-            	UPROPERTY()
-            	TObjectPtr<class USkillCooldownUserWidget> Sword_SkillCooldownBar_E;
-            
-            	UPROPERTY()
-            	TObjectPtr<class USkillCooldownUserWidget> Bow_SkillCooldownBar_E;
-            
-            	UPROPERTY()
-            	TObjectPtr<class USkillCooldownUserWidget> Staff_SkillCooldownBar_E;
-            	
-            	UPROPERTY()
-            	TObjectPtr<class USkillCooldownUserWidget> Sword_SkillCooldownBar_R;
-            
-            	UPROPERTY()
-            	TObjectPtr<class USkillCooldownUserWidget> Bow_SkillCooldownBar_R;
-            
-            	UPROPERTY()
-            	TObjectPtr<class USkillCooldownUserWidget> Staff_SkillCooldownBar_R;
-            ```
-     
-            <br>
-          
-            ```cpp
-            ACharacterBase* Character = Cast<ACharacterBase>(GetOwningPlayerPawn());
-            if (Character)
-            {
-            	Character->SignedChangeWeapon.AddUObject(this, &UHUDWidget::SetSkillUI);
-            	Character->SetupHUDWidget(this);
-            }
-            ```
-      
-            <br>
- 
-            - HUD 클래스는 플레이어 클래스의 포인터를 받아와 `FOnSignedChangeWeapon`  델리게이트에 `SetSkillUI(int32 WeaponType)` 를 등록합니다.
-            - 해당 델리게이트는 캐릭터의 무기가 바뀔 때 브로드캐스트를 보내며 바인딩된 함수는 현재 무기 스킬의 쿨타임바만 보이도록 작동합니다.
-            
-            - 그리고 쿨타임바 위젯 함수를 실행할 수 있는 함수들도 정의되어 있습니다.
-            
-            ```cpp
-            void SetMaxCooldown(float InMaxCooldownTime, int32 WeaponType, 
-            										ESkillType SkillType);
-            void StartCooldown(int32 WeaponType, ESkillType SkillType);
-            void UpdateCooldownBar(float CooldownDuration, FTimerHandle& CooldownTimerHandle,
-            											 bool& bCanUseSkill, ESkillType SkillType, 
-            											 int32 WeaponType, float& Timer);
-            ```
- 
-            <br>
+```cpp
+void USkillCooldownUserWidget::NativeConstruct()
+{
+    Super::NativeConstruct();
 
-            - 해당 함수들은 현재 무기타입, 사용자가 누른 스킬 타입 (Q,W,E,R) 에 따라 쿨타임바를 움직이도록 작동합니다.
-            
-            ```cpp
-            switch (WeaponType)
-            {
-            case 0:
-            	switch(SkillType)
-            	{
-            	case ESkillType::Q:
-            		로직 실행
-            		break;
-            	case ESkillType::W:
-            		로직 실행
-            		break;	
-            	...
-            	}	
-            	break:
-            case 1:
-            ...
-            
-            }
-            
-            // 이런식으로 이중 switch 문입니다.
-            
-            // 12개의 쿨타임바마다 아래 로직이 실행됩니다.
-            GetWorld()->GetTimerManager().SetTimer(CooldownTimerHandle,
-            	[&, SkillType, CooldownDuration]()
-            	{
-            		float ElapsedTime = GetWorld()->GetTimerManager().GetTimerElapsed(CooldownTimerHandle);
-            		Timer += ElapsedTime;
-            		
-            		Sword_SkillCooldownBar_Q->UpdateCooldownBar(Timer);
-            
-            		if (Timer >= CooldownDuration)
-            		{
-            			GetWorld()->GetTimerManager().ClearTimer(CooldownTimerHandle);
-            			bCanUseSkill = true;
-            			Timer = 0.f;
-            		}
-            	}, 0.01f, true);	
-            ```
-            
-            <br>
+    CooldownBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("SkillCooldownBar")));
+    ensure(CooldownBar);
 
-            - 쿨타임바를 업데이트 해주는 로직은 다음과 같습니다.
-            - 쿨타임바와 관련된 함수는 SkillComponent 클래스에서 호출됩니다. 
-            - SkillComponent에서 넘겨주는 인자를 바탕으로 쿨타임바를 업데이트 합니다.
-            
-            `void UpdateCooldownBar(float CooldownDuration, FTimerHandle& CooldownTimerHandle, bool& bCanUseSkill, ESkillType SkillType, int32 WeaponType, float& Timer);`
-            
-            float : 스킬의 MaxCooldown을 정하기 위해 인자를 받는다. 인자로 받기 때문에 람다 함수 안에서 사용하기 위해 캡처해줘야합니다.
-            
-            FTimerHandle : 각 스킬 쿨타임을 관리해줍니다. 스킬 12개에 모두 필요합니다.
-            
-            ESkillType : IPlayerSkillUIInterface.h 에 선언된 enum class 로 본래 캐릭터 클래스에 있는 HUD 포인터를 SkillComponent에서 받아오기 위해 만들었습니다. 그런데 스킬을 구분할 플래그가 필요해서 다른 클래스를 추가로 만들지 않고 해당 인터페이스에 enum class를 만들고 HUDWidget 클래스에 포함시켰습니다.
-            
-            bool : 스킬 플래그이며 SkillComponent에 정의되어 있습니다. 스킬들은 해당 플래그를 이용해 스킬을 온오프하며 원본이 바뀌어야 하기에 참조로 받습니다.
-            
-            int32 : 현재 무기 상태를 구분하기 위한 인자입니다.
-            
-            float& : 스킬이 사용된 후 몇 초가 지났는지 저장하는 변수입니다. SkillComponent에 각 스킬마다 정의되어 있으며 해당 변수의 +-에 따라 쿨타임바가 변합니다.
- 
-            <br>
+    //처음 UI 생성시 쿨타임바 초기화
+    CooldownBar->SetPercent(0.f);
+}
 
-            ## 스킬 컴포넌트
-            
-            - 스킬 컴포넌트에서는 쿨타임을 지정만 해줍니다.
-            - 해당 함수가 스킬 시전할 때마다 호출됩니다.
-            
-            ```cpp
-            void USkillComponent::StartCooldown(float CooldownDuration, 
-            FTimerHandle& CooldownTimerHandle, bool& bCanUseSkill, 
-            ESkillType SkillType, int32 WeaponType, float& Timer)
-            {
-            	bCanUseSkill = false;
-            
-            	Widget->SetMaxCooldown(CooldownDuration, CurrentWeaponType, SkillType);
-            	Widget->StartCooldown(CurrentWeaponType, SkillType);
-            	Widget->UpdateCooldownBar(CooldownDuration, CooldownTimerHandle, 
-            														bCanUseSkill, SkillType, WeaponType,Timer);
-            }
-            ```
-         
+void USkillCooldownUserWidget::UpdateCooldownBar(float CurrentTime)
+{
+    //StartCooldown 함수가 명시적으로 호출되어야지 쿨타임바의 업데이트 시작
+    if (bIsCooldownActive)
+    {
+        //외부에서 들어오는 시간을 그대로 적용한다.
+        CooldownBar->SetPercent(CurrentTime / MaxCooldownTime);
+
+        //최대 쿨타임보다 커지면 더 이상 업데이트를 진행하지 않으며 쿨타임바를 초기화한다.
+        if (CurrentTime >= MaxCooldownTime - KINDA_SMALL_NUMBER)
+        {
+            bIsCooldownActive = false;
+            CooldownBar->SetPercent(0.f);
+        }
+    }
+}
+
+//최대 쿨타임 시간을 정하는 함수
+void USkillCooldownUserWidget::SetCooldownTime(float InMaxCooldownTime)
+{
+    MaxCooldownTime = InMaxCooldownTime;
+}
+
+//쿨타임바의 실행 트리거 함수
+void USkillCooldownUserWidget::StartCooldown()
+{
+    bIsCooldownActive = true;
+}
+
+```
+
+<br>
+
+### HUD 위젯
+
+<img width="1251" height="1315" alt="image (10)" src="https://github.com/user-attachments/assets/14c4c0be-7ed3-4397-8712-51ae885df274" />
+
+
+<br>
+
+-`Q,W, E, R` / `Q_1, W_1, E_1, R_1` / `Q_2, W_2, E_2, R_2` 끼리 한 세트이며 각각 검, 활, 지팡이 스킬 쿨타임바를 의미합니다.
+- HUD 클래스에서 인스턴스를 받아오고 있습니다.
+
+```cpp
+UPROPERTY()
+TObjectPtr<class USkillCooldownUserWidget> Sword_SkillCooldownBar_Q;
+
+UPROPERTY()
+TObjectPtr<class USkillCooldownUserWidget> Bow_SkillCooldownBar_Q;
+
+UPROPERTY()
+TObjectPtr<class USkillCooldownUserWidget> Staff_SkillCooldownBar_Q;
+
+UPROPERTY()
+TObjectPtr<class USkillCooldownUserWidget> Sword_SkillCooldownBar_W;
+
+UPROPERTY()
+TObjectPtr<class USkillCooldownUserWidget> Bow_SkillCooldownBar_W;
+
+UPROPERTY()
+TObjectPtr<class USkillCooldownUserWidget> Staff_SkillCooldownBar_W;
+
+UPROPERTY()
+TObjectPtr<class USkillCooldownUserWidget> Sword_SkillCooldownBar_E;
+
+UPROPERTY()
+TObjectPtr<class USkillCooldownUserWidget> Bow_SkillCooldownBar_E;
+
+UPROPERTY()
+TObjectPtr<class USkillCooldownUserWidget> Staff_SkillCooldownBar_E;
+
+UPROPERTY()
+TObjectPtr<class USkillCooldownUserWidget> Sword_SkillCooldownBar_R;
+
+UPROPERTY()
+TObjectPtr<class USkillCooldownUserWidget> Bow_SkillCooldownBar_R;
+
+UPROPERTY()
+TObjectPtr<class USkillCooldownUserWidget> Staff_SkillCooldownBar_R;
+```
+
+<br>
+
+```cpp
+ACharacterBase* Character = Cast<ACharacterBase>(GetOwningPlayerPawn());
+if (Character)
+{
+    Character->SignedChangeWeapon.AddUObject(this, &UHUDWidget::SetSkillUI);
+    Character->SetupHUDWidget(this);
+}
+```
+
+<br>
+
+-HUD 클래스는 플레이어 클래스의 포인터를 받아와 `FOnSignedChangeWeapon`  델리게이트에 `SetSkillUI(int32 WeaponType)` 를 등록합니다.
+- 해당 델리게이트는 캐릭터의 무기가 바뀔 때 브로드캐스트를 보내며 바인딩된 함수는 현재 무기 스킬의 쿨타임바만 보이도록 작동합니다.
+
+- 그리고 쿨타임바 위젯 함수를 실행할 수 있는 함수들도 정의되어 있습니다.
+
+```cpp
+void SetMaxCooldown(float InMaxCooldownTime, int32 WeaponType,
+    ESkillType SkillType);
+void StartCooldown(int32 WeaponType, ESkillType SkillType);
+void UpdateCooldownBar(float CooldownDuration, FTimerHandle & CooldownTimerHandle,
+    bool& bCanUseSkill, ESkillType SkillType,
+    int32 WeaponType, float& Timer);
+```
+
+<br>
+
+-해당 함수들은 현재 무기타입, 사용자가 누른 스킬 타입(Q, W, E, R) 에 따라 쿨타임바를 움직이도록 작동합니다.
+
+```cpp
+switch (WeaponType)
+{
+case 0:
+    switch (SkillType)
+    {
+    case ESkillType::Q:
+        로직 실행
+            break;
+    case ESkillType::W:
+        로직 실행
+            break;
+        ...
+    }
+    break:
+case 1:
+    ...
+
+}
+
+// 이런식으로 이중 switch 문입니다.
+
+// 12개의 쿨타임바마다 아래 로직이 실행됩니다.
+GetWorld()->GetTimerManager().SetTimer(CooldownTimerHandle,
+    [&, SkillType, CooldownDuration]()
+    {
+        float ElapsedTime = GetWorld()->GetTimerManager().GetTimerElapsed(CooldownTimerHandle);
+        Timer += ElapsedTime;
+
+        Sword_SkillCooldownBar_Q->UpdateCooldownBar(Timer);
+
+        if (Timer >= CooldownDuration)
+        {
+            GetWorld()->GetTimerManager().ClearTimer(CooldownTimerHandle);
+            bCanUseSkill = true;
+            Timer = 0.f;
+        }
+    }, 0.01f, true);
+```
+
+<br>
+
+-쿨타임바를 업데이트 해주는 로직은 다음과 같습니다.
+- 쿨타임바와 관련된 함수는 SkillComponent 클래스에서 호출됩니다.
+- SkillComponent에서 넘겨주는 인자를 바탕으로 쿨타임바를 업데이트 합니다.
+
+`void UpdateCooldownBar(float CooldownDuration, FTimerHandle & CooldownTimerHandle, bool& bCanUseSkill, ESkillType SkillType, int32 WeaponType, float& Timer); `
+
+float : 스킬의 MaxCooldown을 정하기 위해 인자를 받는다.인자로 받기 때문에 람다 함수 안에서 사용하기 위해 캡처해줘야합니다.
+
+FTimerHandle : 각 스킬 쿨타임을 관리해줍니다.스킬 12개에 모두 필요합니다.
+
+ESkillType : IPlayerSkillUIInterface.h 에 선언된 enum class 로 본래 캐릭터 클래스에 있는 HUD 포인터를 SkillComponent에서 받아오기 위해 만들었습니다.그런데 스킬을 구분할 플래그가 필요해서 다른 클래스를 추가로 만들지 않고 해당 인터페이스에 enum class를 만들고 HUDWidget 클래스에 포함시켰습니다.
+
+bool : 스킬 플래그이며 SkillComponent에 정의되어 있습니다.스킬들은 해당 플래그를 이용해 스킬을 온오프하며 원본이 바뀌어야 하기에 참조로 받습니다.
+
+int32 : 현재 무기 상태를 구분하기 위한 인자입니다.
+
+float& : 스킬이 사용된 후 몇 초가 지났는지 저장하는 변수입니다.SkillComponent에 각 스킬마다 정의되어 있으며 해당 변수의 + -에 따라 쿨타임바가 변합니다.
+
+<br>
+
+## 스킬 컴포넌트
+
+- 스킬 컴포넌트에서는 쿨타임을 지정만 해줍니다.
+- 해당 함수가 스킬 시전할 때마다 호출됩니다.
+
+```cpp
+void USkillComponent::StartCooldown(float CooldownDuration,
+    FTimerHandle & CooldownTimerHandle, bool& bCanUseSkill,
+    ESkillType SkillType, int32 WeaponType, float& Timer)
+{
+    bCanUseSkill = false;
+
+    Widget->SetMaxCooldown(CooldownDuration, CurrentWeaponType, SkillType);
+    Widget->StartCooldown(CurrentWeaponType, SkillType);
+    Widget->UpdateCooldownBar(CooldownDuration, CooldownTimerHandle,
+        bCanUseSkill, SkillType, WeaponType, Timer);
+}
+```
+
 </details>
             
 
@@ -629,38 +632,34 @@ EnemyBase란 상위 클래스를 만들어 기본적인 기능을 구현한 후,
 
 2. Behavior Tree
     - 근접 일반 몬스터
-        
-        ![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7ebf7000-f855-492a-973c-2e002d905ac7/e4a7eefe-f009-4e66-ad43-28456a68ab64/image.png)
+       <img width="1216" height="743" alt="image (6)" src="https://github.com/user-attachments/assets/6424a1c9-e06a-41ec-a31a-a89939c165d3" />
 
     <br>
 
     - 근접 탱커  몬스터
-        
-        ![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7ebf7000-f855-492a-973c-2e002d905ac7/7c506d51-ece9-4678-8750-e601b6f6aeb9/image.png)
+       <img width="1478" height="699" alt="image (7)" src="https://github.com/user-attachments/assets/e6580086-8389-4e49-b580-7a3f6e86a373" />
 
     <br>
 
     - 근접 어쌔신 몬스터
-        
-        ![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7ebf7000-f855-492a-973c-2e002d905ac7/5e979204-56bc-420f-9a84-158ad2eb0069/image.png)
+        <img width="1216" height="743" alt="image (5)" src="https://github.com/user-attachments/assets/0f943e77-cda2-4704-954f-9e5f533d62ce" />
 
     <br>
 
     - 원거리 일반 몬스터
-        
-        ![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7ebf7000-f855-492a-973c-2e002d905ac7/c7e74f2f-d3d1-45f6-8745-30781c36f31a/image.png)
+        <img width="983" height="651" alt="image (6)" src="https://github.com/user-attachments/assets/001f1e5a-2f0a-47bc-bdf1-dffa053a6629" />
 
     <br>
     
     - 원거리 시즈 몬스터
-        
-        ![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7ebf7000-f855-492a-973c-2e002d905ac7/b02a03b1-975f-47e4-bcab-6bb50bb995ff/image.png)
+         <img width="1072" height="647" alt="image (7)" src="https://github.com/user-attachments/assets/6ae6f042-f496-4e7e-bfa8-0ff73c4bd9d4" />
+
 
     <br>
 
     - 보스 몬스터
-        
-        ![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/7ebf7000-f855-492a-973c-2e002d905ac7/bd16d3ef-3e61-47b0-8117-2d1d5346b61b/image.png)
+        <img width="948" height="843" alt="image (8)" src="https://github.com/user-attachments/assets/d5666104-5403-468f-b0cc-1f1e3b459064" />
+
         
 <br>
 
@@ -687,14 +686,14 @@ enum class EStageState : uint8
   - FIGHT - 스테이지의 문이 닫히며 몬스터와 전투 시작
   - NEXT - **FIGHT** 상태에서 스폰된 몬스터가 모두 없어지면 전환되며 다음 스테이지로 가는 문이 열림
 - 문이 열리는 방향은 비트 플래그 값을 바탕으로 함
-  <img width="469" height="294" alt="KakaoTalk_20241123_010635716" src="https://github.com/user-attachments/assets/556ad35c-394c-4ce6-9aab-2a26b5d038eb" />
+  
+<img width="469" height="294" alt="KakaoTalk_20241123_010635716" src="https://github.com/user-attachments/assets/556ad35c-394c-4ce6-9aab-2a26b5d038eb" />
 
-        
 <br>
 
 ### 애니메이션
 
-- Blend Pose 노드를 사용해 무기마다 다른 애니메이션 실행
+- Blend Pose 노드를 사용해 무기 타입마다 다른 애니메이션 실행
 - 현재 무기 타입을 enum class로 받아옴
 
 <br>
