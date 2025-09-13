@@ -7,9 +7,7 @@
 
 `개발 도구`:  C++, Github, Unreal Engine 5.4
 
-`디자인 패턴`: 이벤트 큐 패턴, 상태 패턴, 싱글톤 패턴
-
-`플레이 영상`: [플레이 영상 바로가기](https://drive.google.com/file/d/1zY7l_9YJuAV5TMM1DHRHP9y_MlMIn4IE/view?usp=drive_link)
+`플레이 영상`: [플레이 영상(Youtube)](https://youtu.be/4CyI_gF_lA0)
 
 <br>
 
